@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Experimento - Pêndulo simples</title>
+
+    <link rel="icon" href="favicon.ico" />
+    <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/regression@2.0.1/dist/regression.min.js"></script>
+
+</head>
+<body>
+    <header class="bg-gray-900 sm:flex sm:justify-between sm:items-center sm:px-4">
+        <div class="flex items-center justify-between px-4 py-3 ">
+            <div>
+                <svg 
+                viewBox="0 0 750 750" 
+                xmlns="http://www.w3.org/2000/svg"
+                class="fill-current text-white h-8 w-8 mr-2">
+                    <path 
+                        d="M0 30C0 13.4315 13.4315 0 30 0H50H325C338.807 0 350 11.1929 350 25V25C350 38.8071 338.807 50 325 50H80C63.4315 50 50 63.4315 50 80V270C50 286.569 63.4315 300 80 300H225C238.807 300 250 311.193 250 325V325C250 338.807 238.807 350 225 350H80C63.4315 350 50 363.431 50 380V725C50 738.807 38.8071 750 25 750V750C11.1929 750 0 738.807 0 725V50V30ZM500 125C500 111.193 511.193 100 525 100V100C538.807 100 550 111.193 550 125V270C550 286.569 563.431 300 580 300H670C686.569 300 700 286.569 700 270V80C700 63.4315 686.569 50 670 50H525C511.193 50 500 38.8071 500 25V25C500 11.1929 511.193 0 525 0H700H720C736.569 0 750 13.4315 750 30V50V300V320C750 336.569 736.569 350 720 350H580C563.431 350 550 363.431 550 380V625C550 638.807 538.807 650 525 650V650C511.193 650 500 638.807 500 625V350V300V125ZM350 125C350 111.193 338.807 100 325 100V100C311.193 100 300 111.193 300 125V700V720C300 736.569 313.431 750 330 750H350H525C538.807 750 550 738.807 550 725V725C550 711.193 538.807 700 525 700H380C363.431 700 350 686.569 350 670V125ZM400 25C400 11.1929 411.193 0 425 0V0C438.807 0 450 11.1929 450 25V525C450 538.807 438.807 550 425 550V550C411.193 550 400 538.807 400 525V25ZM450 625C450 611.193 438.807 600 425 600V600C411.193 600 400 611.193 400 625V625C400 638.807 411.193 650 425 650V650C438.807 650 450 638.807 450 625V625ZM700 525C700 511.193 711.193 500 725 500V500C738.807 500 750 511.193 750 525V525C750 538.807 738.807 550 725 550V550C711.193 550 700 538.807 700 525V525ZM200 625C200 611.193 211.193 600 225 600V600C238.807 600 250 611.193 250 625V625C250 638.807 238.807 650 225 650V650C211.193 650 200 638.807 200 625V625ZM650 125C650 111.193 638.807 100 625 100V100C611.193 100 600 111.193 600 125V225C600 238.807 611.193 250 625 250V250C638.807 250 650 238.807 650 225V125ZM100 125C100 111.193 111.193 100 125 100H225C238.807 100 250 111.193 250 125V125C250 138.807 238.807 150 225 150H125C111.193 150 100 138.807 100 125V125ZM250 225C250 211.193 238.807 200 225 200H125C111.193 200 100 211.193 100 225V225C100 238.807 111.193 250 125 250H225C238.807 250 250 238.807 250 225V225ZM250 425C250 411.193 238.807 400 225 400H150H130C113.431 400 100 413.431 100 430V450V500V550V700V720C100 736.569 113.431 750 130 750H150H225C238.807 750 250 738.807 250 725V725C250 711.193 238.807 700 225 700H180C163.431 700 150 686.569 150 670V580C150 563.431 163.431 550 180 550H225C238.807 550 250 538.807 250 525V525C250 511.193 238.807 500 225 500H175C161.193 500 150 488.807 150 475V475C150 461.193 161.193 450 175 450H225C238.807 450 250 438.807 250 425V425ZM650 400H725C738.807 400 750 411.193 750 425V425C750 438.807 738.807 450 725 450H680C663.431 450 650 463.431 650 480V570C650 586.569 663.431 600 680 600H725C738.807 600 750 611.193 750 625V625C750 638.807 738.807 650 725 650H675C661.193 650 650 661.193 650 675V675C650 688.807 661.193 700 675 700H725C738.807 700 750 711.193 750 725V725C750 738.807 738.807 750 725 750H650H630C613.431 750 600 736.569 600 720V700V650V600V450V430C600 413.431 613.431 400 630 400H650Z" 
+                    />
+                </svg> 
+            </div>
+     
+            <div class="text-xl text-white font-bold uppercase tracking-widest">
+                Experimento
+            </div>
+            <div class="">
+                <button id="btn_menu" class="block text-gray-500 hover:text-white sm:hidden">
+                    <svg 
+                    viewBox="0 0 612 612"
+                    class="fill-current h-6 w-6">
+                        <path d="M581.4,520.199H30.6c-16.891,0-30.6,13.709-30.6,30.6C0,567.691,13.709,581.4,30.6,581.4h550.8 c16.891,0,30.6-13.709,30.6-30.602C612,533.908,598.291,520.199,581.4,520.199z M30.6,91.799h550.8 c16.891,0,30.6-13.708,30.6-30.6c0-16.892-13.709-30.6-30.6-30.6H30.6C13.709,30.6,0,44.308,0,61.2 C0,78.091,13.709,91.799,30.6,91.799z M581.4,275.399H30.6C13.709,275.399,0,289.108,0,306s13.709,30.6,30.6,30.6h550.8 c16.891,0,30.6-13.709,30.6-30.6S598.291,275.399,581.4,275.399z"/>
+                    </svg> 
+                </button>
+            </div>
+
+        </div>
+        <nav id="menu" class="hidden px-2 pt-2 pb-4 sm:flex">
+            <a id="menuExemplo" class="block px-2 py-1 text-white font-semibold rounded hover:bg-gray-800" href="#">Dados Exemplo</a>
+            <a id="menuRegressao" class="block mt-1 px-2 py-1 text-white font-semibold rounded hover:bg-gray-800 sm:mt-0 sm:ml-2" href="#">Regressão</a>
+            <div class="relative">
+                <a id="menuLinear" class="z-10 relative block mt-1 px-2 py-1 text-white font-semibold rounded hover:bg-gray-800 sm:mt-0 sm:ml-2" href="#">Linearização</a>
+                <button id="menuLinearSair" class="hidden fixed top-0 bottom-0 left-0 right-0 h-full w-full bg-black opacity-50 cursor-default"></button>
+                <div id="subMenuLinear" class="absolute hidden sm:right-0 left-0 w-40 bg-white rounded-lg px-0 py-2 shadow-xl">
+                    <a id="botaoLinearizary" class="block px-4 py-2 text-gray-800 hover:bg-indigo-500 hover:text-white" href="#">T' = T<sup>2</sup></a> 
+                    <a id="botaoLinearizarx" class="block px-4 py-2 text-gray-800 hover:bg-indigo-500 hover:text-white" href="#">L' = L<sup>2</sup></a> 
+                    <a id="botaoLinearizarRaizY" class="block px-4 py-2 text-gray-800 hover:bg-indigo-500 hover:text-white" href="#">T' = &radic;T</a> 
+                    <a id="botaoLinearizarRaizX" class="block px-4 py-2 text-gray-800 hover:bg-indigo-500 hover:text-white" href="#">L' = &radic;L</a> 
+                </div>
+            </div>         
+        
+        
+        </nav>
+    </header>
+
+    <main class="bg-white px-2 py-4 my-3 w-3/4 mx-auto">
+
+        <div class="flex items-center mt-4">
+            <button class="w-full bg-green-500 text-xs text-white font-bold rounded-md px-4 py-2 uppercase" id="botaoConectar">Conectar</button>
+            <button class="w-full bg-red-500 text-xs text-white font-bold rounded-md px-4 py-2 uppercase" id="botaoDesconectar">Desconectar</button>    
+        </div>
+
+        <div id="resultadoRegressao" class="text-center mt-4">
+        </div>
+
+        <canvas id="grafico" class="mt-5" ></canvas>
+
+        <table class="w-full mt-4 text-xs text-center border">
+            <thead class="bg-gray-700 uppercase text-white ">
+              <tr>
+                <th class="px-6 py-3 font-bold">L</th>
+                <th class="px-6 py-3 font-bold">T</th>
+              </tr>
+            </thead>
+            <tbody id="tabela" class="divide-y divide-gray-200">
+            </tbody>
+        </table>
+
+        <div class="w-full text-xs mt-4">
+            <div class="grid gap-2 grid-cols-3">
+                <input id="valorY" class="w-full my-2 rounded-md p-2 bg-gray-200 border text-gray-700 border-gray-200 bg-white" value="0.0" placeholder="L"/>
+                <input id="valorX" class="w-full my-2 rounded-md p-2 border text-gray-700 border-gray-200 bg-white" placeholder="T"/>
+                <button id="registrar" class="w-full my-2 bg-white text-xs font-bold text-gray-700 border-2 border-gray-700 rounded-md p-2 uppercase shadow-md">+</button>            
+            </div>
+        </div>
+
+        <script src="script.js" type="module"></script>
+    </main>
+</body>
+</html>

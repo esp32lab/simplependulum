@@ -1,0 +1,247 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<title>LATINOWARE2020</title>
+
+		<link rel="stylesheet" href="dist/reset.css">
+		<link rel="stylesheet" href="dist/reveal.css">
+		<link rel="stylesheet" href="dist/theme/latinoware.css" id="theme">
+		<link rel="stylesheet" href="plugin/highlight/monokai.css" id="highlight-theme">
+	</head>
+	<body>
+		<div class="reveal">
+		<div class="slides">
+			<section data-background-image="./imagens/bg1.png" data-markdown><textarea data-template>
+				# Hackeando o ensino de Física com ESP32 e Bluetooth
+
+				Autor: Felipe Cézar
+			</textarea></section>
+			<section data-background-image="./imagens/bg00.png" data-markdown><textarea data-template>
+				> Mestre não é quem sempre ensina, </br>
+				> mas quem derrepente aprende </br>
+				> #GuimarãesRosa
+			</textarea></section>
+			<section data-background-image="./imagens/bg02.png" data-markdown><textarea data-template>
+				## Motivação
+
+				- É desafiador ensinar Física
+				- Exige a correlação entre conceitos abstratos
+				- A aprendizagem deve ser contextualizada
+			</textarea></section>
+			<section data-background-image="./imagens/bg04.png" data-markdown><textarea data-template>
+				## Pendulo Simples
+
+				- Importância histórica
+				- Aplicabilidade
+			</textarea></section>
+			<section data-background-image="./imagens/bg03.png" data-markdown><textarea data-template>
+				## Desafios
+
+				- Onter medidas precisas de dados
+				- Promover o protagonismo do estudante
+				- Disponibilizar ferramentas para visualização a análise de dados
+				- Possibilitar a execução em ambientes variados
+				- Possuir baixo custo
+				- Tempo de execução
+			</textarea></section>
+			<section data-background-image="./imagens/bg05.png">
+				<section data-markdown><textarea data-template>
+					## Hardware
+					
+					| ![](./imagens/arduinoUNO_placa.png) | ![](./imagens/esp8266_placa.png) | ![](./imagens/esp32_placa.png) |
+					| :------------: | :------------: |:-------------------: |
+					| Arduino UNO R3 | ESP8266        | ESP32               |
+					| 8 bits      	 | 32 bits        | 32 bits              |
+					| 1 core      	 | 1core          | 2 cores              |
+					| 16 MHz      	 | 80 MHz         | 160   MHz            |
+					| 2 KB RAM    	 | 160 KB RAM     | 512 KB RAM           |
+					| 32 KB Flash 	 | 16MB Flash     | 16MB Flash           |
+					| 14 GPIO 6 ADC  | 17 GPIO 1 ADC  | 36 GPIO 18 ADC 2 DAC |
+					|            	 | wifi           | wifi + ble           |
+					| R$ 50,00       | R$ 50,00       | R$ 80,00             |
+				</textarea></section>
+				<section data-markdown><textarea data-template>
+					## Sensor
+					
+					- TCRT500: Sensor ótico reflexivo 
+					- R$ 10,00
+
+					![](./imagens/TCRT500.png)
+				</textarea></section>
+			</section>
+			<section data-background-image="./imagens/bg07.png">
+				<section data-markdown><textarea data-template>
+					## Programação
+					
+					- Micropython
+
+					![](./imagens/micropython.png)
+				</textarea></section>
+				<section data-auto-animate>
+					<h2>Interrupção Externa</h2>
+					<pre data-id="code-animation"><code class="python" data-trim data-line-numbers="1-2|4|11|12|7-9">
+						import time
+						from machine import Pin, Timer
+
+						temporizador = Timer(0)
+						tempos = []
+
+						def interrupcao(temporizador):
+							global tempos
+							tempos.append(time.ticks_ms())
+
+						p21 = Pin(21,Pin.IN,Pin.PULL_UP)
+						p21.irq(trigger=Pin.IRQ_RISING,handler=interrupcao)
+					</code></pre>
+				</section>
+				<section data-auto-animate>
+					<h2>Efeito “bouncing”</h2>
+					<pre data-id="code-animation"><code class="python" data-trim data-line-numbers="16|11-13|12|13|7-9">
+						import time
+						from machine import Pin, Timer
+						
+						temporizador = Timer(0)
+						tempos = []
+						
+						def interrupcao(temporizador):
+							global tempos
+							tempos.append(time.ticks_ms())
+						
+						def debounce(pin):
+							global temporizador               
+							temporizador.init(mode=Timer.ONE_SHOT,period=200,callback=interrupcao)
+						
+						p21 = Pin(21,Pin.IN,Pin.PULL_UP)
+						p21.irq(trigger=Pin.IRQ_RISING,handler=debounce)
+					</code></pre>
+				</section>
+			</section>
+			<section data-background-image="./imagens/bg09.png">
+				<section data-markdown><textarea data-template>
+					## Comunicação
+					
+					- Bluetooth Low Energy (BLE)
+
+					![](./imagens/ble.png)
+				</textarea></section>
+				<section >
+					<pre ><code class="python" data-trim 
+						data-line-numbers="1-3|5-6|8-9|11-19|21|23-30|32-39|40-43|45-46">
+						import bluetooth, struct
+						from ble_advertising import advertising_payload
+						from micropython import const
+
+						servicoUuid         = 0xBEEF;
+						caracteristicaUuid  = 0xFEED;
+
+						_IRQ_CENTRAL_CONNECT    = const(1)
+						_IRQ_CENTRAL_DISCONNECT = const(2)
+
+						_PENDULO_UUID = bluetooth.UUID(servicoUuid)
+						_PENDULO_CHAR = (
+							bluetooth.UUID(caracteristicaUuid),
+							bluetooth.FLAG_READ | bluetooth.FLAG_NOTIFY,
+						)
+						_PENDULO_SERV = (
+							_PENDULO_UUID,
+							(_PENDULO_CHAR,),
+						)
+
+						class BLEPendulo:
+							
+							def __init__(self, ble, name="PenduloSensor"):
+								self._ble = ble
+								self._ble.active(True)
+								self._ble.irq(self._irq)
+								((self._handle,),) = self._ble.gatts_register_services((_PENDULO_SERV,))
+								self._connections = set()
+								self._payload = advertising_payload(name=name, services=[_PENDULO_UUID])
+								self._advertise()
+
+							def _irq(self, event, data):
+								if event == _IRQ_CENTRAL_CONNECT:
+									conn_handle, _, _ = data
+									self._connections.add(conn_handle)
+								elif event == _IRQ_CENTRAL_DISCONNECT:
+									conn_handle, _, _ = data
+									self._connections.remove(conn_handle)
+
+							def set_valor(self, valor):
+								self._ble.gatts_write(self._handle,struct.pack('&lt;h', valor))
+								for conn_handle in self._connections:
+									self._ble.gatts_notify(conn_handle, self._handle)
+
+							def _advertise(self, interval_us=30000):
+								self._ble.gap_advertise(interval_us, adv_data=self._payload)
+					</code></pre>
+				</section>
+			</section>
+			<section data-background-image="./imagens/bg10.png">
+				<section data-markdown><textarea data-template>
+					## Progressive Web App (PWA)
+	
+					![](./imagens/pwa.png)
+				</textarea></section>
+				<section>
+					<h2>Web Bluetooth API</h2>
+					<pre ><code class="js" data-trim 
+						data-line-numbers="|1-3|5|6-9|8,1|11|12,1|13,2|15,18-25|19-23|24|">
+						let servicoUuid        	= 0xBEEF;
+						let caracteristicaUuid 	= 0xFEED;
+						let dispositivo, caracteristica;
+
+						botaoConectar.onclick = async () => {  
+							dispositivo = await navigator.bluetooth
+							.requestDevice({ 
+								filters: [{services: [servicoUuid]}] 
+							});
+
+							const servidor = await dispositivo.gatt.connect();
+							const servico = await servidor.getPrimaryService(servicoUuid);
+							caracteristica = await servico.getCharacteristic(caracteristicaUuid);
+
+							monitorarSensor();
+						};
+
+						const monitorarSensor = () => {
+							caracteristica.addEventListener('characteristicvaluechanged', 
+							(evt) => {
+								const dado = evt.target.value.getInt16(0, true);
+								document.getElementById('valorX').value = (dado/1000);
+							});
+							caracteristica.startNotifications();
+						};
+					</code></pre>
+				</section>
+				<section data-background-iframe="http://192.168.0.108:8080">
+				</section>
+			</section>
+			<section data-background-image="./imagens/bg00.png" data-markdown><textarea data-template>
+				> Eu quase que nada não sei. </br>
+				> Mas desconfio de muita coisa. </br>
+				> #GuimarãesRosa
+			</textarea></section>
+		</div></div>
+		<script src="dist/reveal.js"></script>
+		<script src="plugin/notes/notes.js"></script>
+		<script src="plugin/markdown/markdown.js"></script>
+		<script src="plugin/highlight/highlight.js"></script>
+		<script>
+			Reveal.initialize({
+				width: "100%",
+				height: "100%",
+				margin: 0,
+				minScale: 1,
+				maxScale: 1,
+				controls: true,
+				progress: true,
+				history: true,
+				center: true,
+				plugins: [ RevealMarkdown, RevealHighlight, RevealNotes ]
+			});
+		</script>
+	</body>
+</html>
